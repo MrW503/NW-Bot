@@ -186,7 +186,7 @@ async def ipcommand(message):
 
 #team
 async def teamcommand(message):
-    embed=discord.Embed(title="NW Build Team", url='https://buildtheearth.net/buildteams/153', color=color)
+    embed=discord.Embed(title="NW Build Team", url='https://buildtheearth.net/bte-nw', color=color)
     await message.channel.send(embed = embed)
     
 #help
@@ -312,7 +312,7 @@ async def on_member_join(member):
     channel = client.get_channel(707748041599483986)
     embed=discord.Embed(title='Welcome to the server!',description='Check out <#707749870584332458> for info, get your roles in <#707784141550256188>, and say hi in <#712526046188273726>!', color=color)
     embed.add_field(name="Server IP:", value="bte-nw.apexmc.co", inline=False)
-    embed.add_field(name="Our Build Team:", value="https://buildtheearth.net/buildteams/153", inline=False)
+    embed.add_field(name="Our Build Team:", value="https://buildtheearth.net/bte-nw", inline=False)
     await channel.send(embed=embed)
     await channel.send('<@'+str(member.id)+'>')
         
