@@ -3,15 +3,12 @@
 ...
 ...
 
-import os
 import platform
-from time import ctime
 import discord  
 import asyncio
 from discord.ext import tasks, commands
 from mcstatus import MinecraftServer
 from timeloop import Timeloop
-import datetime
 import mechanize
 import urllib.parse
 import brotli
@@ -168,7 +165,8 @@ async def fulcrum(message):
 
 #status
 async def statuscommand(message):
-    global cstatus 
+    global cstatus
+    query = server.query()
     if cstatus == False:
         embed = discord.Embed(title='Sorry...',description = 'Server is \n```diff\n- Down\n```', color=color)
         await message.channel.send(embed = embed)
@@ -177,6 +175,14 @@ async def statuscommand(message):
         ping = str(round(latency, 0))
         embed = discord.Embed(title='Response Time:', description=ping + ' ms', color=color)
         await message.channel.send(embed = embed)
+        
+        if query.players.names != 0:
+            #for i in query.players.names:
+            embed = discord.Embed(title='Online Players:', description=str(query.players.names).strip("['']"), color=color)
+        else:
+            embed = discord.Embed(title='Online Players:', description='There\'s no one online...', color=color)
+        await message.channel.send(embed = embed)
+
 
 #ip
 async def ipcommand(message):
@@ -324,7 +330,7 @@ async def on_member_join(member):
 async def playerlist():
     if cstatus == True:
         query = server.query()
-        activity = discord.Game(name=str(query.players.online) + '/' + str(query.players.max) + ' players Building The NW')
+        activity = discord.Game(name=str(query.players.online) + '/' + str(query.players.max) + ' players Building The NW')    
         await client.change_presence(activity=activity)
     else:
         await client.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('someone probably broke the server...'))
