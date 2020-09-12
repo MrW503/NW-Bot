@@ -22,7 +22,7 @@ import commandfunctions
 if platform.system() == 'Windows':
     path = 'data.yml'
 elif platform.system() == 'Linux':
-    path = '/home/pi/git/PNW-Bot/data.yml'
+    path = '/home/pi/git/NW-Bot/data.yml'
 with open(path) as file:
     TOKEN = yaml.load(file, Loader=yaml.FullLoader)['token']
 
@@ -77,9 +77,9 @@ def getstats():
         with open(r'data.yml') as file:
             password = yaml.load(file, Loader=yaml.FullLoader)['password']
     elif platform.system() == 'Linux':
-        with open(r'/home/pi/git/PNW-Bot/data.yml') as file:
+        with open(r'/home/pi/git/NW-Bot/data.yml') as file:
             username = yaml.load(file, Loader=yaml.FullLoader)['username']
-        with open(r'/home/pi/git/PNW-Bot/data.yml') as file:
+        with open(r'/home/pi/git/NW-Bot/data.yml') as file:
             password = yaml.load(file, Loader=yaml.FullLoader)['password']            
 
 
