@@ -4,6 +4,7 @@ import discord
 import asyncio
 from mcstatus import MinecraftServer
 import enum
+import re
 
 
 
@@ -53,7 +54,8 @@ async def helpcommand(client,message,color,role,guildid,prefix):
  
  
  
- 
+###########################
+###########################
  
  
  #start: color or {timer}exit
@@ -96,6 +98,11 @@ async def editmsg(botmsg,desc,color):
     await botmsg.edit(embed=embed)
  
 async def configcommand(client,message,color,role,guildid,prefix):
+    owner = message.guild.owner
+    if message.author != owner:
+        embed = discord.Embed(title='Denied.',description='you aren\'t the owner...', color=color)
+        await message.channel.send(embed=embed)
+        return
     global oldmsg
     global reaction
     path = os.path.dirname(os.path.realpath(__file__)) + '/Server-Configs/'
@@ -146,10 +153,15 @@ async def configcommand(client,message,color,role,guildid,prefix):
                     desc = 'Closed.'
                     await exit(desc,color,botmsg)
                 else:
-                    color = int(event.content, 16) + 0x0
-                    tempdict["color"] = color
-                    await event.delete()
-                    state = ConfigState.Prefix
+                    msg = event.content
+                    match = re.search('#?([a-fA-F0-9]{6})',msg)
+                    if match != None:
+                        color = int(match.group(1), 16) + 0x0
+                        tempdict["color"] = color
+                        await event.delete()
+                        state = ConfigState.Prefix
+                    else:
+                        await event.delete()
             for future in done:
                 future.exception()
             for future in pending:
@@ -173,9 +185,14 @@ async def configcommand(client,message,color,role,guildid,prefix):
                     desc = 'Closed.'
                     await exit(desc,color,botmsg)
                 else:
-                    tempdict["prefix"] = event.content
-                    await event.delete()
-                    state = ConfigState.Admin
+                    msg = event.content
+                    match = re.search('^([!@#$^&*_\-=+''~`|:;<.,])$',msg)
+                    if match != None:
+                        tempdict["prefix"] = match.group(1)
+                        await event.delete()
+                        state = ConfigState.Admin
+                    else:
+                        await event.delete()
             for future in done:
                 future.exception()
             for future in pending:
@@ -213,8 +230,10 @@ async def configcommand(client,message,color,role,guildid,prefix):
                 json.dump(tempdict, json_file)
             state = ConfigState.Exit
             desc = 'Closed.'
-            await exit(desc,color,botmsg)
+            await editmsg(desc,color,botmsg)
 
+###########################
+###########################
 
 
 def commandlist():               
