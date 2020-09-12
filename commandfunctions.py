@@ -3,6 +3,7 @@ import json
 import discord  
 import asyncio
 from mcstatus import MinecraftServer
+import enum
 
 
 
@@ -51,81 +52,170 @@ async def helpcommand(client,message,color,role,guildid,prefix):
  
  
  
-######################
-
-def check(reaction, user):
-    if user == oldmsg.author and str(reaction.emoji) == '✅':
-        reaction = 0
+ 
+ 
+ 
+ 
+ #start: color or {timer}exit
+ #color: prefix or color or exit
+#prefix: admin or prefix or exit
+#admin: verify or ?? or exit 
+#verify: save or exit
+#save: exit
+ 
+class ConfigState(enum.Enum):
+    Start = 1
+    Color = 2
+    Prefix = 3
+    Admin = 4
+    Verify = 5
+    Save = 6
+    Exit = 7
+ 
+async def exit(desc,color,botmsg):
+    await botmsg.delete()
+    await oldmsg.delete()
+    embed=discord.Embed(title='Configuration',description=desc, color=color)
+    message = await botmsg.channel.send(embed = embed)
+    await message.delete(delay=10)
+ 
+def checkemote(event, user):
+    if user == oldmsg.author and str(event.emoji) == '✅':
         return True
-    elif user == oldmsg.author and str(reaction.emoji) == '❌':
-        reaction = 1
+    elif user == oldmsg.author and str(event.emoji) == '❌':
         return True
-    else: 
+    else:
         return False
-
+    
 def isauthor(message):
     return message.author == oldmsg.author
 
+    
 async def editmsg(botmsg,desc,color):
     embed=discord.Embed(title='Configuration',description=desc, color=color)
     await botmsg.edit(embed=embed)
-
+ 
 async def configcommand(client,message,color,role,guildid,prefix):
     global oldmsg
     global reaction
+    path = os.path.dirname(os.path.realpath(__file__)) + '/Server-Configs/'
     oldmsg = message
     reaction = 0
-    path = os.path.dirname(os.path.realpath(__file__)) + '/Server-Configs/'
+    tempdict = {}
+    botmsg = None
+    state = ConfigState.Start
     
-    if (str(guildid) + '.json') in os.listdir(path):
-        pass
-    else:
-        embed=discord.Embed(title='Configuration',description='This server hasn\'t been set up. React below to configure.', color=color)
-        botmsg = await message.channel.send(embed = embed)
-        await botmsg.add_reaction(emoji='✅')
-        await botmsg.add_reaction(emoji='❌')
-        try:
-            await client.wait_for('reaction_add', timeout=30.0, check=check)
-        except asyncio.TimeoutError:
-            await botmsg.delete()
-            await oldmsg.delete()
-            embed=discord.Embed(title='Configuration',description='Timed out... type .configure to reopen me.', color=color)
-            message = await botmsg.channel.send(embed = embed)
-            await message.delete(delay=10)
-        else:
-            if reaction == 0:   
-                tempdict = {}
-                await botmsg.clear_reactions()
-                
-                desc = 'What color should the embeds be? *Needs hex code*'
-                await editmsg(botmsg,desc,color)
-                message = await client.wait_for('message', check=isauthor)
-                color = int(message.content, 16) + 0x200
-                tempdict["color"] = color
-                await message.delete()
-                desc = 'What prefix should this server use?'
-                await editmsg(botmsg,desc,color)
-                #await botmsg.edit(embed=embed)
-                message = await client.wait_for('message', check=isauthor)
-                tempdict["prefix"] = message.content
-                tempdict["admin-role"] = None
-                await message.delete()
-                desc = 'All set up!'
-                await editmsg(botmsg,desc,color)
-                await botmsg.delete(delay=15)
-                with open(path + str(guildid) + '.json', 'w') as json_file:
-                    json.dump(tempdict, json_file)  
+    
+    while state != ConfigState.Exit:
+        # Start -- do you want to configure?  Either go to color or exit
+        if state == ConfigState.Start:
+            embed=discord.Embed(title='Configuration',description='This server hasn\'t been set up. React below to configure.', color=color)
+            botmsg = await message.channel.send(embed = embed)
+            await botmsg.add_reaction(emoji='✅')
+            await botmsg.add_reaction(emoji='❌')
+            try:
+                event, user = await client.wait_for('reaction_add', timeout=30.0, check=checkemote)
+            except asyncio.TimeoutError:
+                state = ConfigState.Exit
+                desc = 'Timed out... type .configure to reopen me.'
+                await exit(desc,color,botmsg)
             else:
-                await message.delete()
-                await botmsg.delete()
+                if str(event.emoji) == '✅':
+                    await botmsg.clear_reactions()
+                    state = ConfigState.Color
+                else:
+                    state = ConfigState.Exit
+                    desc = 'Closed.'
+                    await exit(desc,color,botmsg)
+                    
+        if state == ConfigState.Color:
+            desc = 'What color should the embeds be? *Needs hex code*'
+            await editmsg(botmsg,desc,color)
+            await botmsg.add_reaction(emoji='❌')
+            done, pending = await asyncio.wait([client.wait_for('message', check=isauthor),client.wait_for('reaction_add', check=checkemote)]
+                , return_when=asyncio.FIRST_COMPLETED)
+            try:
+                event = done.pop().result()
+            except ...:
+                state = ConfigState.Exit
+                desc = 'Closed.'
+                await exit(desc,color,botmsg)
+            else:
+                if type(event) is tuple and str(event[0].emoji) == '❌':
+                    state = ConfigState.Exit
+                    desc = 'Closed.'
+                    await exit(desc,color,botmsg)
+                else:
+                    color = int(event.content, 16) + 0x0
+                    tempdict["color"] = color
+                    await event.delete()
+                    state = ConfigState.Prefix
+            for future in done:
+                future.exception()
+            for future in pending:
+                future.cancel()  # we don't need these anymore
+                
+        if state == ConfigState.Prefix:
+            desc = 'What prefix'
+            await editmsg(botmsg,desc,color)
+            await botmsg.add_reaction(emoji='❌')
+            done, pending = await asyncio.wait([client.wait_for('message', check=isauthor),client.wait_for('reaction_add', check=checkemote)]
+                , return_when=asyncio.FIRST_COMPLETED)
+            try:
+                event = done.pop().result()
+            except ...:
+                state = ConfigState.Exit
+                desc = 'Closed.'
+                await exit(desc,color,botmsg)
+            else:
+                if type(event) is tuple and str(event[0].emoji) == '❌':
+                    state = ConfigState.Exit
+                    desc = 'Closed.'
+                    await exit(desc,color,botmsg)
+                else:
+                    tempdict["prefix"] = event.content
+                    await event.delete()
+                    state = ConfigState.Admin
+            for future in done:
+                future.exception()
+            for future in pending:
+                future.cancel()  # we don't need these anymore
+        
+        if state == ConfigState.Admin:
+            tempdict["admin-role"] = None
+            state = ConfigState.Verify
+            
+        if state == ConfigState.Verify:
+            embed=discord.Embed(title='Configuration',description='Is this right: ', color=color)
+            embed.add_field(name='Prefix',value=tempdict['prefix'])
+            embed.add_field(name='Admin',value=tempdict["admin-role"])
+            await botmsg.edit(embed=embed)
+            await botmsg.add_reaction(emoji='✅')
+            await botmsg.add_reaction(emoji='❌')
+            try:
+                event, user = await client.wait_for('reaction_add', check=checkemote)
+            except asyncio.TimeoutError:
+                state = ConfigState.Exit
+            else:
+                if str(event.emoji) == '✅':
+                    await botmsg.clear_reactions()
+                    state = ConfigState.Save
+                else:
+                    await botmsg.clear_reactions()
+                    state = ConfigState.Color
+            
+        if state == ConfigState.Save:
+            desc = 'All set up!'
+            await editmsg(botmsg,desc,color)
+            await botmsg.delete(delay=15)
+            await oldmsg.delete()
+            with open(path + str(guildid) + '.json', 'w') as json_file:
+                json.dump(tempdict, json_file)
+            state = ConfigState.Exit
+            desc = 'Closed.'
+            await exit(desc,color,botmsg)
 
 
-commandlist = {
-    "config": (configcommand, [nw,testing]),
-    "ip": (ipcommand, [se, nw, testing]),
-    "team": (teamcommand, [se, nw, testing]),
-    "help": (helpcommand, [nw, testing])    
-    }
 
 def commandlist():               
     return {
@@ -135,19 +225,4 @@ def commandlist():
     "help": (helpcommand, [nw, testing])    
     }
 
-
-            
-   
-        
-        
-
-
-# @client.event
-# async def on_member_join(member):
-#     channel = client.get_channel(707748041599483986)
-#     embed=discord.Embed(title='Welcome to the server!',description='Check out <#707749870584332458> for info, get your roles in <#707784141550256188>, and say hi in <#712526046188273726>!', color=color)
-#     embed.add_field(name="Server IP:", value="bte-nw.apexmc.co", inline=False)
-#     embed.add_field(name="Our Build Team:", value="https://buildtheearth.net/bte-nw", inline=False)
-#     await channel.send(embed=embed)
-#     await channel.send('<@'+str(member.id)+'>')
         
