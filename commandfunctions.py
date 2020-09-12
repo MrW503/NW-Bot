@@ -27,7 +27,7 @@ testing = 750500953018466361
 def getserver(message,guildid):
     if guildid == nw:
         return MinecraftServer.lookup("bte-nw.apexmc.co")
-    if guildid == se or guildid == testing:
+    if guildid == se:
         return MinecraftServer.lookup("104.243.43.228:25571")
 
 async def ipcommand(client,message,color,role,guildid,prefix):
@@ -238,10 +238,10 @@ async def configcommand(client,message,color,role,guildid,prefix):
 
 def commandlist():               
     return {
-    "config": (configcommand, [nw,testing]),
+    "config": (configcommand, [se, nw,testing]),
     "ip": (ipcommand, [se, nw, testing]),
     "team": (teamcommand, [se, nw, testing]),
-    "help": (helpcommand, [nw, testing])    
+    "help": (helpcommand, [se, nw, testing])    
     }
 
         
