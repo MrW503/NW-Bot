@@ -29,6 +29,20 @@ def getserver(message,guildid):
         return MinecraftServer.lookup("bte-nw.apexmc.co")
     if guildid == se:
         return MinecraftServer.lookup("104.243.43.228:25571")
+    
+async def statuscommand(client,message,color,role,guildid,prefix):
+    server = getserver(message,guildid)
+    query = server.query()
+    latency = server.ping()
+    ping = str(round(latency, 0))
+    embed = discord.Embed(title='Response Time:', description=ping + ' ms', color=color)
+    await message.channel.send(embed = embed)
+    if query.players.online != 0:
+        #for i in query.players.names:
+        embed = discord.Embed(title='Online Players:', description=str(query.players.names).strip("['']"), color=color)
+    else:
+        embed = discord.Embed(title='Online Players:', description='There\'s no one online...', color=color)
+    await message.channel.send(embed = embed)
 
 async def ipcommand(client,message,color,role,guildid,prefix):
     server = getserver(message,guildid)
@@ -47,8 +61,25 @@ async def helpcommand(client,message,color,role,guildid,prefix):
     embed=discord.Embed(title="Commands:", color=color)
     embed.add_field(name=prefix+"ip", value="Server IP", inline=True)
     embed.add_field(name=prefix+"team", value="Build Team Link", inline=True)
+    embed.add_field(name=prefix+"website", value="Website Link", inline=True)
+    embed.add_field(name=prefix+"patreon", value="Patreon Link", inline=True)
+    embed.add_field(name=prefix+"status", value="Server Status", inline=True)
     await message.channel.send(embed = embed)
     pass
+
+async def websitecommand(client,message,color,role,guildid,prefix):
+    if guildid == nw:
+        embed=discord.Embed(title="NW Website", url='https://sites.google.com/view/bte-nw/home', color=color)
+    elif guildid == se:
+        embed=discord.Embed(title="SE Website", url='https://sites.google.com/view/southeastbte/home', color=color)
+    await message.channel.send(embed=embed)
+    
+async def patreoncommand(client,message,color,role,guildid,prefix):
+    if guildid == nw:
+        embed=discord.Embed(title="NW Patreon", url='https://www.patreon.com/btenw', color=color)
+    elif guildid == se:
+        embed=discord.Embed(title="SE Website", url='https://www.patreon.com/southeastbte', color=color)
+    await message.channel.send(embed=embed) 
      
  
  
@@ -241,7 +272,10 @@ def commandlist():
     "config": (configcommand, [se, nw,testing]),
     "ip": (ipcommand, [se, nw, testing]),
     "team": (teamcommand, [se, nw, testing]),
-    "help": (helpcommand, [se, nw, testing])    
+    "help": (helpcommand, [se, nw, testing]),
+    "website": (websitecommand, [se, nw, testing]),
+    "patreon": (patreoncommand, [se, nw, testing]),
+    "status": (statuscommand, [se, nw, testing])     
     }
 
         
