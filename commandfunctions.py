@@ -51,12 +51,15 @@ async def ipcommand(cfg):
     
 async def teamcommand(cfg):
     gID = cfg.guildID
+    msg = cfg.message
     color = cfg.color
     if gID == nw:
         embed=discord.Embed(title="NW Build Team", url='https://buildtheearth.net/bte-nw', color=color)
     elif gID == se:
         embed=discord.Embed(title="SE Build Team", url='https://buildtheearth.net/buildteams/138', color=color)
-    await gID.channel.send(embed=embed) 
+    else:
+        embed=discord.Embed(title="Sorry...", description='I don\'t recognize this server.', color=color)
+    await msg.channel.send(embed=embed) 
 
 
 
@@ -83,6 +86,8 @@ async def websitecommand(cfg):
         embed=discord.Embed(title="NW Website", url='https://sites.google.com/view/bte-nw/home', color=color)
     elif gID == se:
         embed=discord.Embed(title="SE Website", url='https://sites.google.com/view/southeastbte/home', color=color)
+    else:
+        embed=discord.Embed(title="Sorry...", description='I don\'t recognize this server.', color=color)
     await msg.channel.send(embed=embed)
     
     
@@ -94,7 +99,21 @@ async def patreoncommand(cfg):
     if gID == nw:
         embed=discord.Embed(title="NW Patreon", url='https://www.patreon.com/btenw', color=color)
     elif gID == se:
-        embed=discord.Embed(title="SE Website", url='https://www.patreon.com/southeastbte', color=color)
+        embed=discord.Embed(title="SE Patreon", url='https://www.patreon.com/southeastbte', color=color)
+    else:
+        embed=discord.Embed(title="Sorry...", description='I don\'t recognize this server.', color=color)
+    await msg.channel.send(embed=embed) 
+    
+async def ytcommand(cfg):
+    gID = cfg.guildID
+    msg = cfg.message
+    color = cfg.color
+    if gID == nw:
+        embed=discord.Embed(title="NW Youtube", url='https://www.youtube.com/channel/UC63tkSDC8MKcGD947m8xu7w', color=color)
+    elif gID == se:
+        embed=discord.Embed(title="SE Youtube", url='https://www.youtube.com/channel/UC1amqO2YaZSsfjuuK885SxA', color=color)
+    else:
+        embed=discord.Embed(title="Sorry...", description='I don\'t recognize this server.', color=color)
     await msg.channel.send(embed=embed) 
 
 
@@ -116,5 +135,6 @@ def commandlist():
     "help": (helpcommand, [se, nw, testing]),
     "website": (websitecommand, [se, nw, testing]),
     "patreon": (patreoncommand, [se, nw, testing]),
-    "status": (statuscommand, [se, nw, testing])     
+    "status": (statuscommand, [se, nw, testing]),
+    "youtube": (ytcommand, [se, nw, testing])   
     }
