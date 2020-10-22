@@ -40,7 +40,8 @@ async def ipcommand(cfg):
     color = cfg.color
     if server != False:
         host = server.host
-        embed=discord.Embed(title="Server IP:", description=host, color=color)
+        port = server.port
+        embed=discord.Embed(title="Server IP:", description=host+":"+port, color=color)
         await msg.channel.send(embed = embed)
     else:
         embed = discord.Embed(title='Sorry...', description='this command requires a server ip', color=color)
