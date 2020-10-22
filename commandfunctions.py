@@ -39,8 +39,8 @@ async def ipcommand(cfg):
     msg = cfg.message
     color = cfg.color
     if server != False:
-        host = server.host
-        port = server.port
+        host = str(server.host)
+        port = str(server.port)
         embed=discord.Embed(title="Server IP:", description=host+":"+port, color=color)
         await msg.channel.send(embed = embed)
     else:

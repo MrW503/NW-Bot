@@ -27,8 +27,7 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
     status.getStatusData.start()
     status.checkstatus.start(client)
-    channel = client.get_channel(750500953018466364)
-    await channel.send('I\'m online.')
+    statuschange.start()
     
 #######################################################################################
 #                               Message Handler

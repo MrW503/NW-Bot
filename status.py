@@ -29,7 +29,6 @@ async def getStatusData():
 async def checkstatus(client):
     global check
     global serverinfo
-    print(serverinfo)
     for config in serverinfo:
         ip = config['IP']
         if ip == None:
@@ -42,7 +41,6 @@ async def checkstatus(client):
                 response = check.check(ip, False)
             else:
                 response = check.check(ip, True)
-            print(response)
             await getServer(client,config,response)
 
 
@@ -50,8 +48,6 @@ async def checkstatus(client):
 async def getServer(client,config,response):
     vc = config['voicechannel']
     channel = client.get_channel(vc)
-    print(channel)
-    print(response)
     if response[1] == Status.JustOnline:
         await channel.edit(name='Server Online')
     elif response[1] == Status.JustOffline:
